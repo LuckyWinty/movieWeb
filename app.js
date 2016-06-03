@@ -9,7 +9,7 @@ app.set('view engine','jade');
 
 app.use(bodyParser.urlencoded());
 
-app.use(express.static(path.join(_dirname,'node_modules')));
+app.use(express.static(path.join(__dirname,'node_modules')));
 app.listen(port);
 
 console.log('start on port'+port);
