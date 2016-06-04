@@ -1,8 +1,14 @@
 var express=require('express');
 var path=require('path');
+
+var mongoose=require('mongoose');
+var _=require('underscore');
+var Movie=require('./models/movie');
 var bodyParser=require('body-parser');
 var port=process.env.PORT||3000;
 var app=express();
+
+mongoose.connect('mongodb://localhost/movieWeb');
 
 app.set('views','./views/pages');
 app.set('view engine','jade');
@@ -16,57 +22,25 @@ console.log('start on port'+port);
 
 //index page
 app.get('/',function(req,res){
-	res.render('index',{
-		title:'movie首页',
-		movies:[{
-			title:'天启',
-			_id:1,
-			poster:'http://r3.ykimg.com/05160000530EEB63675839160D0B79D5'
-		},{
-			title:'天启',
-			_id:2,
-			poster:'http://r3.ykimg.com/05160000530EEB63675839160D0B79D5'
-		},{
-			title:'天启',
-			_id:3,
-			poster:'http://r3.ykimg.com/05160000530EEB63675839160D0B79D5'
-		},{
-			title:'天启',
-			_id:4,
-			poster:'http://r3.ykimg.com/05160000530EEB63675839160D0B79D5'
-		},{
-			title:'天启',
-			_id:5,
-			poster:'http://r3.ykimg.com/05160000530EEB63675839160D0B79D5'
-		},{
-			title:'天启',
-			_id:6,
-			poster:'http://r3.ykimg.com/05160000530EEB63675839160D0B79D5'
-		},{
-			title:'天启',
-			_id:7,
-			poster:'http://r3.ykimg.com/05160000530EEB63675839160D0B79D5'
-		},{
-			title:'天启',
-			_id:8,
-			poster:'http://r3.ykimg.com/05160000530EEB63675839160D0B79D5'
-		}]
+	Movie.fetch(function(err,movies){
+		if(err){
+			console.log(err);
+		}
+		res.render('index',{
+			title:'movie首页',
+			movies:movies
+		})
 	})
 })
 //detail page
 app.get('/movie/:id',function(req,res){
-	res.render('detail',{
-		title:'movie 详情页',
-		movie:{
-			director:'李安',
-			country:'美国',
-			title:'机械战警',
-			year:2016,
-			poster:'http://r3.ykimg.com/05160000530EEB63675839160D0B79D5',
-			language:'英语',
-			flash:'http://r3.ykimg.com/05160000530EEB63675839160D0B79D5',
-			summary:'非常好！'
-		}
+	var id=req.params.id;
+
+	Movie.findById(id,function(err,movie){
+		res.render('detail',{
+			title:'movie详情页'+movie.id,
+			movie:movie
+		})
 	})
 })
 //admin page
@@ -74,31 +48,76 @@ app.get('/admin/movie',function(req,res){
 	res.render('admin',{
 		title:'movie 后台录入页',
 		movie:{
-			title:'',
-			director:'',
-			country:'',
-			year:'',
-			poster:'',
-			flash:'',
-			summary:'',
-			language:''
+			title:'12',
+			director:'2',
+			country:'2',
+			year:'2016',
+			poster:'4',
+			flash:'5',
+			summary:'5',
+			language:'5'
 		}
 	})
 })
+//admin update movie
+app.get('/admin/update/:id',function(req,res){
+	var id=req.params.id;
+	if(id){
+		Movie.findById(id,function(err,movie){
+			res.render('admin',{
+				title:'movie 后台更新页',
+				movie:movie
+			})
+		})
+	}
+})
+//admin post movie
+app.post('./admin/movie/new',function(res,req){
+	var id=req.body.movie._id;
+	var movieObj=req.body.movie;
+	var _movie;
+
+	if(id!='undefined'){
+		Movie.findById(id,function(err,movie){
+			if(err){
+				console.log(err);
+			}
+			_movie=_.extend(movie,movieObj);
+			_movie.save(function(err,movie){
+				if(err){
+					console.log(err);
+				}
+				res.redirect('/movie'+movie._id);
+			})
+		})
+	}else{
+		_movie=new Movie({
+			director:movieObj.director,
+			title:movieObj.title,
+			country:movieObj.country,
+			language:movieObj.language,
+			year:movieObj.year,
+			poster:movieObj.poster,
+			summary:movieObj.summary,
+			flash:movieObj.flash
+		})
+		_movie.save(function(err,movie){
+			if(err){
+				console.log(err);
+			}
+			res.redirect('/movie'+movie._id);
+		})
+	}
+})
 //list page
 app.get('/admin/list',function(req,res){
-	res.render('list',{
-		title:'movie 列表页',
-		movies:{
-			title:'机械战警',
-			_id:1,
-			director:'李安',
-			country:'美国',
-			year:2016,
-			poster:'http://r3.ykimg.com/05160000530EEB63675839160D0B79D5',
-			language:'英语',
-			flash:'http://r3.ykimg.com/05160000530EEB63675839160D0B79D5',
-			summary:'非常好哈哈！'
+	Movie.fetch(function(err,movies){
+		if(err){
+			console.log(err);
 		}
+		res.render('list',{
+			title:'movie 列表页',
+			movies:movies
+		})
 	})
 })

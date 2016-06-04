@@ -4,6 +4,7 @@ block content
   .container
     .row
       form.form-horizontal(method='post',action='/admin/movie/new')
+      	input(type='hidden',name='movie[_id]',value='#{movie._id}')
         if movie._id
             input(type='hidden',name='movie[_id]',value=movie._id)
         .form-group
