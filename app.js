@@ -13,9 +13,12 @@ mongoose.connect('mongodb://localhost/movieWeb');
 app.set('views','./views/pages');
 app.set('view engine','jade');
 
-app.use(bodyParser.urlencoded());
+app.use(bodyParser.urlencoded({extended:true}));
+app.use(bodyParser.json());
 
 app.use(express.static(path.join(__dirname,'node_modules')));
+app.locals.moment=require('moment');
+
 app.listen(port);
 
 console.log('start on port'+port);
@@ -38,7 +41,7 @@ app.get('/movie/:id',function(req,res){
 
 	Movie.findById(id,function(err,movie){
 		res.render('detail',{
-			title:'movie详情页'+movie.id,
+			title:'movie详情页'+movie._id,
 			movie:movie
 		})
 	})
@@ -48,14 +51,14 @@ app.get('/admin/movie',function(req,res){
 	res.render('admin',{
 		title:'movie 后台录入页',
 		movie:{
-			title:'12',
-			director:'2',
-			country:'2',
-			year:'2016',
-			poster:'4',
-			flash:'5',
-			summary:'5',
-			language:'5'
+			title:'',
+			director:'',
+			country:'',
+			year:'',
+			poster:'',
+			flash:'',
+			summary:'',
+			language:''
 		}
 	})
 })
@@ -72,12 +75,14 @@ app.get('/admin/update/:id',function(req,res){
 	}
 })
 //admin post movie
-app.post('./admin/movie/new',function(res,req){
+app.post('/admin/movie/new',function(req,res){
+	console.log(req.body);
+	console.log(req.body.movie);
 	var id=req.body.movie._id;
 	var movieObj=req.body.movie;
 	var _movie;
-
-	if(id!='undefined'){
+	console.log(id);
+	if(id){
 		Movie.findById(id,function(err,movie){
 			if(err){
 				console.log(err);
@@ -87,7 +92,7 @@ app.post('./admin/movie/new',function(res,req){
 				if(err){
 					console.log(err);
 				}
-				res.redirect('/movie'+movie._id);
+				res.redirect('/movie/'+movie._id);
 			})
 		})
 	}else{
@@ -105,7 +110,7 @@ app.post('./admin/movie/new',function(res,req){
 			if(err){
 				console.log(err);
 			}
-			res.redirect('/movie'+movie._id);
+			res.redirect('/movie/'+movie._id);
 		})
 	}
 })
