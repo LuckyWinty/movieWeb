@@ -38,13 +38,16 @@ app.get('/',function(req,res){
 //detail page
 app.get('/movie/:id',function(req,res){
 	var id=req.params.id;
-
-	Movie.findById(id,function(err,movie){
-		res.render('detail',{
-			title:'movie详情页'+movie._id,
-			movie:movie
+	if((id!='undefined')&&(id!=undefined)){
+		Movie.findById(id,function(err,movie){
+			res.render('detail',{
+				title:'movie详情页'+movie._id,
+				movie:movie
+			})
 		})
-	})
+	}else{
+		return false;
+	}
 })
 //admin page
 app.get('/admin/movie',function(req,res){
